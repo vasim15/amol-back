@@ -1,0 +1,375 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGO_URI")
+}
+
+///----------------------------  Book Module Start  ----------------------------
+//Books Schema
+model Books {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  author      String
+  aboutAuthor String
+  shortDesc   String?
+  ISPN        String?
+  description String?
+  images      String[]
+  price       Float         @default(0)
+  quantity    Int           @default(0)
+  pageCount   Int
+  createdAt   DateTime?     @default(now())
+  updatedAt   DateTime?     @updatedAt
+  edition     String[]      @default(["ENGLISH"])
+  BookOrder   BookOrder[]
+  BookReviews BookReviews[]
+}
+
+model BookOrder {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  book     Books  @relation(fields: [bookId], references: [id])
+  bookId   String @db.ObjectId
+  quantity Int
+  subtotal Float
+  order    Order  @relation(fields: [orderId], references: [id])
+  orderId  String @db.ObjectId
+}
+
+model Order {
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  orderDate             DateTime?          @default(now())
+  totalPrice            Float?             @default(0)
+  subtotalPrice         Float?             @default(0)
+  total_refunded_amount Float?             @default(0)
+  financial_status      Boolean            @default(false)
+  deliveryStatus        DeliveryStatusType @default(PROGRESS)
+  couponCode            String?
+  shippingAddress       UserAddress        @relation(fields: [userAddressId], references: [id])
+  orderItems            BookOrder[]
+  userAddressId         String             @db.ObjectId
+  user                  User?              @relation(fields: [userId], references: [id])
+  userId                String?            @db.ObjectId
+}
+
+model BookReviews {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  book       Books   @relation(fields: [bookId], references: [id])
+  bookId     String  @db.ObjectId
+  user       User?   @relation(fields: [userId], references: [id])
+  userId     String? @db.ObjectId
+  ratings    Int     @default(0)
+  reviewText String
+}
+
+// Book Order Schema
+
+///----------------------------  Book Module End  ----------------------------
+
+///----------------------------  Course  Module Start  ----------------------------
+model Course {
+  id                     String              @id @default(auto()) @map("_id") @db.ObjectId
+  instructor             String? // Instructor's name
+  instructorAbout        String? //Instructor's description
+  title                  String? // Title of the course
+  shortDesc              String?
+  description            String?
+  courseBenefits         String?
+  zoomLink               String?
+  zoomPass               String?
+  images                 String[]
+  startDate              DateTime?
+  endDate                DateTime?
+  teaserVideo            String?
+  sessionCount           Int                 @default(1)
+  totalTimeforCompletion Float?              @default(1)
+  courseCategory         CourseCategoryType
+  isAlert                Boolean             @default(false)
+  price                  Float               @default(0)
+  category               ProductCategoryType @default(COURSE)
+
+  ContestRegister ContestRegister[]
+  CourseOrder     CourseOrder[]
+}
+
+model CourseOrder {
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  user                  User?             @relation(fields: [userId], references: [id])
+  userId                String?           @db.ObjectId
+  Course                Course?           @relation(fields: [courseId], references: [id])
+  courseId              String?           @db.ObjectId
+  firstName             String
+  lastName              String
+  email                 String
+  whatsappNumber        String
+  selectDate            DateTime
+  profession            String
+  working               String
+  reasonToAttendCourse  String
+  hearedAboutCourse     String
+  isReadRefundPolicy    Boolean
+  areYouAttendCourse    Boolean
+  couponCode            String?
+  orderDate             DateTime?         @default(now())
+  totalPrice            Float?            @default(0)
+  subtotalPrice         Float?            @default(0)
+  total_refunded_amount Float?            @default(0)
+  financial_status      PaymentStatusType @default(PENDING)
+}
+
+///----------------------------  Course  Module End  ----------------------------
+
+///----------------------------  Counseling  Module Start  ----------------------------
+model Counseling {
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  title              String? // Title of the course
+  slots              Int               @default(1)
+  slotsBooked        Int               @default(0)
+  instructor         String? // Instructor's name
+  instructorAbout    String? //Instructor's description
+  counselingBenefits String?
+  description        String?
+  images             String[]
+  counselingCategory CounselingType    @default(SINGLE)
+  price              Float             @default(0)
+  CounselingOrder    CounselingOrder[]
+}
+
+model CounselingOrder {
+  id                     String            @id @default(auto()) @map("_id") @db.ObjectId
+  firstName              String
+  lastName               String
+  fatherName             String
+  motherName             String
+  isPermissionTaken      Boolean
+  isCounsellingCompleted Boolean           @default(false)
+  mobileNumber           String
+  email                  String
+  describeProblem        String
+  counselingBookTime     DateTime
+  zoomLink               String?
+  zoomPass               String?
+  couponCode             String?
+  isReadRefundPolicy     Boolean
+  orderDate              DateTime?         @default(now())
+  totalPrice             Float?            @default(0)
+  subtotalPrice          Float?            @default(0)
+  total_refunded_amount  Float?            @default(0)
+  financial_status       PaymentStatusType @default(PENDING)
+  user                   User?             @relation(fields: [userId], references: [id])
+  userId                 String?           @db.ObjectId
+  Counseling             Counseling?       @relation(fields: [counselingId], references: [id])
+  counselingId           String?           @db.ObjectId
+  createdAt              DateTime?         @default(now())
+  updatedAt              DateTime?         @updatedAt
+}
+
+///----------------------------  Counseling  Module End  ----------------------------
+
+///----------------------------  Question Bank  Module Start  ----------------------------
+
+model QuestionBankGroup {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  noOfQuestions Int        @default(5)
+  questions     Question[]
+  createdAt     DateTime?  @default(now())
+  updatedAt     DateTime?  @updatedAt
+}
+
+model Question {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  text                String
+  options             String[]
+  correctOption       Int
+  QuestionBankGroup   QuestionBankGroup? @relation(fields: [questionBankGroupId], references: [id])
+  questionBankGroupId String?            @db.ObjectId
+}
+
+///----------------------------  Question Bank   Module Start  ----------------------------
+model Product {
+  id           String              @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  images       String[]
+  price        Float
+  quantity     Int                 @default(0)
+  availability String
+  ratingValue  Float?
+  reviewCount  Int?
+  createdAt    DateTime?           @default(now())
+  updatedAt    DateTime?           @updatedAt
+  category     ProductCategoryType
+}
+
+//Users Schema
+model User {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  email          String        @unique
+  google_id      String?
+  mobileNumber   String?       @unique
+  firstName      String
+  lastName       String
+  password       String?
+  dob            String?
+  studyingIn     String?
+  preparing      String?
+  isTermsChecked Boolean
+  gender         GenderType
+  role           UserRoleType
+  schoolName     String?
+  orders         Order[]
+  createdAt      DateTime?     @default(now())
+  updatedAt      DateTime?     @updatedAt
+  UserAddress    UserAddress[]
+
+  ContestRegister ContestRegister[]
+  BookReviews     BookReviews[]
+  CourseOrder     CourseOrder[]
+  CounselingOrder CounselingOrder[]
+}
+
+// Instivtute Table 
+model Institute {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  instituteName String    @unique
+  centerCode    String    @unique
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt
+}
+
+//User Address 
+model UserAddress {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  user         User    @relation(fields: [userId], references: [id])
+  userId       String  @db.ObjectId
+  address1     String
+  address2     String?
+  city         String
+  postalCode   String
+  country      String
+  mobileNumber String
+  telNumber    String?
+  Order        Order[]
+}
+
+model CounsellingPackage {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String  @unique
+  price       String?
+  duration    String?
+  image       String?
+  description String
+}
+
+model StaticPage {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  title   String @unique
+  slug    String @unique
+  content String
+}
+
+model Coupon {
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  code       String           @unique
+  discount   Float
+  targetType CouponTargetType
+  expiration DateTime
+  createdAt  DateTime?        @default(now())
+  updatedAt  DateTime?        @updatedAt
+}
+
+// Contest 
+
+model Contest {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  image     String
+  price     Float
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model ContestRegister {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
+  users          User     @relation(fields: [userId], references: [id])
+  firstName      String
+  lastName       String
+  email          String
+  whatsappNumber String
+  startDate      DateTime
+  endDate        DateTime
+  contestAbout   String
+  isBook         Boolean  @default(false)
+  isRefundPolicy Boolean
+  createdAt      DateTime @default(now())
+  Course         Course?  @relation(fields: [courseId], references: [id])
+  courseId       String?  @db.ObjectId
+}
+
+model Testimonials {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  name        String              @unique
+  occupation  String
+  rating      Int
+  description String
+  image       String?
+  video       String?
+  type        ProductCategoryType
+  createdAt   DateTime?           @default(now())
+  updatedAt   DateTime?           @updatedAt
+}
+
+enum CouponTargetType {
+  BOOK
+  COURSE
+  CONTEST
+}
+
+enum UserRoleType {
+  STUDENT
+  ADMIN
+}
+
+enum GenderType {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum CourseCategoryType {
+  STUDENT
+  PARENT
+  TEACHER
+}
+
+enum CounselingType {
+  SINGLE
+  MONTH
+  HALF_YEAR
+}
+
+enum ProductCategoryType {
+  BOOK
+  COURSE
+}
+
+enum PaymentStatusType {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum DeliveryStatusType {
+  PROGRESS
+  SHIPMENT
+  DELIVERED
+  REJECTED
+}
